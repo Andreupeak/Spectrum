@@ -39,6 +39,7 @@ const App = () => {
   const [prompt, setPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState(null);
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem('spectrum_api_key') || '');
 
   // Initialize
   useEffect(() => {
@@ -192,7 +193,7 @@ const App = () => {
     setPrompt('');
 
     try {
-      const aiColors = await generateAIColors(userPrompt);
+      const aiColors = await generateAIColors(userPrompt, colors.length, apiKey);
       if (aiColors && Array.isArray(aiColors)) {
         const newPalette = aiColors.map(hex => ({
           hex: hex.startsWith('#') ? hex : `#${hex}`,
@@ -264,6 +265,28 @@ const App = () => {
               </div>
 
               <div className="flex-1 overflow-y-auto p-6 space-y-6 premium-scroll">
+                {/* API Key Section */}
+                <div className="bg-white/5 rounded-xl p-4 border border-white/10 space-y-4">
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs font-bold text-white/60 tracking-wider">OPENAI API KEY</label>
+                  </div>
+                  <div className="relative">
+                    <input
+                      type="password"
+                      value={apiKey}
+                      onChange={(e) => {
+                        setApiKey(e.target.value);
+                        localStorage.setItem('spectrum_api_key', e.target.value);
+                      }}
+                      placeholder="sk-..."
+                      className="w-full bg-white/10 border border-white/10 rounded-lg py-2 px-3 text-sm focus:outline-none focus:border-indigo-500 transition-colors"
+                    />
+                  </div>
+                  <p className="text-[10px] text-white/40 leading-relaxed">
+                    Key is stored locally in your browser.
+                  </p>
+                </div>
+
                 {/* Configuration Section */}
                 <div className="bg-white/5 rounded-xl p-4 border border-white/10 space-y-4">
                   <div className="flex justify-between items-center">

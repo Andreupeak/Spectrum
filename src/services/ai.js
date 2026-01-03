@@ -1,7 +1,7 @@
-export const generateAIColors = async (prompt, count = 5) => {
-    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+export const generateAIColors = async (prompt, count = 5, apiKey) => {
+    const key = apiKey || import.meta.env.VITE_OPENAI_API_KEY;
 
-    if (!apiKey) {
+    if (!key) {
         console.error("Missing OpenAI API Key");
         throw new Error("Missing API Key");
     }
@@ -15,7 +15,7 @@ export const generateAIColors = async (prompt, count = 5) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`
+                'Authorization': `Bearer ${key}`
             },
             body: JSON.stringify({
                 model: "gpt-4-turbo-preview",
