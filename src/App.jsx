@@ -58,10 +58,69 @@ const App = () => {
     localStorage.setItem('spectrum_palettes', JSON.stringify(savedPalettes));
   }, [savedPalettes]);
 
+  // Harmony Generator
+  const generateHarmony = (baseColor, count) => {
+    const schemes = ['analogous', 'triadic', 'complementary', 'split', 'tetradic', 'monochromatic'];
+    const scheme = schemes[Math.floor(Math.random() * schemes.length)];
+    const base = chroma(baseColor);
+    let colors = [base.hex()];
+
+    for (let i = 1; i < count; i++) {
+      let color;
+      switch (scheme) {
+        case 'analogous':
+          color = base.set('hsl.h', base.get('hsl.h') + (i * 30)).hex();
+          break;
+        case 'triadic':
+          color = base.set('hsl.h', base.get('hsl.h') + (i * 120)).hex();
+          break;
+        case 'complementary':
+          color = base.set('hsl.h', base.get('hsl.h') + (i * 180)).hex();
+          break;
+        case 'split':
+          color = base.set('hsl.h', base.get('hsl.h') + (150 * (i % 2 === 0 ? 1 : -1))).hex();
+          break;
+        case 'tetradic':
+          color = base.set('hsl.h', base.get('hsl.h') + (i * 90)).hex();
+          break;
+        case 'monochromatic':
+          color = base.darken(i * 0.5).hex();
+          break;
+        default:
+          color = chroma.random().hex();
+      }
+      // Add some random variation to saturation/lightness for realism
+      colors.push(chroma(color).saturate(Math.random() - 0.5).brighten(Math.random() - 0.5).hex());
+    }
+    return colors;
+  };
+
   const generateNewPalette = useCallback(() => {
-    setColors(prev => prev.map(color =>
-      color.locked ? color : { ...color, hex: chroma.random().hex() }
-    ));
+    setColors(prev => {
+      // Find anchored color (first locked color)
+      const lockedColors = prev.filter(c => c.locked);
+      const anchorColor = lockedColors.length > 0 ? lockedColors[0].hex : chroma.random().hex();
+
+      // Generate harmony based on anchor or random base
+      const harmonyColors = generateHarmony(anchorColor, prev.length + 5); // Generate extra to be safe
+      let harmonyIndex = 0;
+
+      return prev.map(color => {
+        if (color.locked) return color;
+
+        // Pick next unused color from harmony
+        let newHex = harmonyColors[harmonyIndex++];
+        // Make sure we don't pick the anchor itself if it's already there
+        while (lockedColors.some(c => c.hex === newHex) && harmonyIndex < harmonyColors.length) {
+          newHex = harmonyColors[harmonyIndex++];
+        }
+
+        return { ...color, hex: newHex || chroma.random().hex() };
+      });
+    });
+
+    // Add to history (briefly)
+    setHistory(prev => [prev[0], ...prev].slice(0, 10));
   }, []);
 
   // Spacebar Listener
@@ -205,6 +264,35 @@ const App = () => {
               </div>
 
               <div className="flex-1 overflow-y-auto p-6 space-y-6 premium-scroll">
+                {/* Configuration Section */}
+                <div className="bg-white/5 rounded-xl p-4 border border-white/10 space-y-4">
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs font-bold text-white/60 tracking-wider">PALETTE SIZE</label>
+                    <span className="text-xs font-mono bg-white/10 px-2 py-1 rounded text-white/80">{colors.length}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="2"
+                    max="10"
+                    value={colors.length}
+                    onChange={(e) => {
+                      const newSize = parseInt(e.target.value);
+                      const currentSize = colors.length;
+                      if (newSize > currentSize) {
+                        const newColors = Array.from({ length: newSize - currentSize }).map(() => ({
+                          hex: chroma.random().hex(),
+                          locked: false,
+                          id: Math.random().toString(36).substr(2, 9)
+                        }));
+                        setColors([...colors, ...newColors]);
+                      } else {
+                        setColors(colors.slice(0, newSize));
+                      }
+                    }}
+                    className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-lg hover:[&::-webkit-slider-thumb]:scale-110 transition-all"
+                  />
+                </div>
+
                 {chatMessages.map((msg, i) => (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}

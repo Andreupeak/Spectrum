@@ -1,4 +1,4 @@
-export const generateAIColors = async (prompt) => {
+export const generateAIColors = async (prompt, count = 5) => {
     const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
 
     if (!apiKey) {
@@ -6,9 +6,9 @@ export const generateAIColors = async (prompt) => {
         throw new Error("Missing API Key");
     }
 
-    const systemPrompt = `You are a professional color theorist. Generate a color palette based on the user's description. 
-  Return ONLY a JSON array of 5 hex codes. 
-  Example: ["#FF5733", "#C70039", "#900C3F", "#581845", "#FFC300"]`;
+    const systemPrompt = `You are a professional color theorist. Generate a highly aesthetic, harmonious, and premium color palette based on the user's description. Ensure the colors complement each other perfectly.
+  Return ONLY a JSON array of ${count} hex codes. 
+  Example: ${JSON.stringify(Array(count).fill('#000000'))}`;
 
     try {
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
