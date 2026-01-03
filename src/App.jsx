@@ -252,7 +252,7 @@ const App = () => {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed right-0 top-0 bottom-0 w-[400px] glass z-50 flex flex-col border-l border-white/10"
+              className="fixed right-0 top-0 bottom-0 w-full md:w-[400px] glass z-50 flex flex-col border-l border-white/10 h-screen max-h-screen overflow-hidden"
             >
               <div className="p-6 border-b border-white/10 flex items-center justify-between bg-white/5">
                 <div className="flex gap-4">
@@ -264,7 +264,7 @@ const App = () => {
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-6 space-y-6 premium-scroll">
+              <div className="flex-1 overflow-y-auto p-6 space-y-6 premium-scroll min-h-0">
                 {/* API Key Section */}
                 <div className="bg-white/5 rounded-xl p-4 border border-white/10 space-y-4">
                   <div className="flex justify-between items-center">
